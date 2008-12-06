@@ -584,6 +584,7 @@ AC_ARG_ENABLE(xsdl,           AS_HELP_STRING([--enable-xsdl], [Build the kdrive 
 AC_ARG_ENABLE(xfake,          AS_HELP_STRING([--enable-xfake], [Build the kdrive 'fake' server (default: auto)]), [XFAKE=$enableval], [XFAKE=auto])
 AC_ARG_ENABLE(xfbdev,         AS_HELP_STRING([--enable-xfbdev], [Build the kdrive framebuffer device server (default: auto)]), [XFBDEV=$enableval], [XFBDEV=auto])
 AC_ARG_ENABLE(kdrive-vesa,    AS_HELP_STRING([--enable-kdrive-vesa], [Build the kdrive VESA-based servers (default: auto)]), [KDRIVEVESA=$enableval], [KDRIVEVESA=auto])
+AC_ARG_ENABLE(kdrive-glamo,    AS_HELP_STRING([--enable-kdrive-glamo], [Build the kdrive glamo server (default: auto)]), [KDRIVEGLAMO=$enableval], [KDRIVEGLAMO=auto])
 dnl xprint
 AC_ARG_ENABLE(freetype,       AS_HELP_STRING([ --enable-freetype], [Build Xprint FreeType backend (default: no)]), [XP_USE_FREETYPE=$enableval],[XP_USE_FREETYPE=no])
 AC_ARG_WITH(freetype-config,  AS_HELP_STRING([ --with-freetype-config=PROG], [Use FreeType configuration program PROG (default: auto)]), freetype_config=$withval, freetype_config=auto)
@@ -1878,6 +1879,17 @@ if test "$KDRIVE" = yes; then
         AC_DEFINE(KDRIVEVESA, 1, [Build VESA-based kdrive servers])
     fi
 
+    AC_CHECK_HEADERS([sys/vm86.h linux/fb.h])
+    if test "$ac_cv_header_sys_vm86_h" = yes && \
+       test "$ac_cv_header_linux_fb_h" && test "x$KDRIVEGLAMO" = xauto; then
+        KDRIVEGLAMO=yes
+    fi
+
+    if test "x$KDRIVEGLAMO" = xyes; then
+        KDRIVEFBDEVLIB=yes
+        AC_DEFINE(KDRIVEGLAMO, 1, [Build glamo kdrive server])
+    fi
+
     AC_CHECK_HEADERS([linux/fb.h])
     if test "$ac_cv_header_linux_fb_h" = yes && test "x$XFBDEV" = xauto; then
         XFBDEV=yes
@@ -1984,6 +1996,7 @@ AM_CONDITIONAL(KDRIVELINUX, [test "x$KDRIVELINUX" = xyes])
 AM_CONDITIONAL(TSLIB, [test "x$HAVE_TSLIB" = xyes])
 AM_CONDITIONAL(H3600_TS, false)
 AM_CONDITIONAL(KDRIVEVESA, [test "x$KDRIVEVESA" = xyes])
+AM_CONDITIONAL(KDRIVEGLAMO, [test "x$KDRIVEGLAMO" = xyes])
 AM_CONDITIONAL(KDRIVEFBDEV, [test "x$XFBDEV" = xyes])
 AM_CONDITIONAL(XSDLSERVER, [test x"$XSDL" = xyes])
 AM_CONDITIONAL(XEPHYR, [test "x$KDRIVE" = xyes && test "x$XEPHYR" = xyes])
@@ -2204,6 +2217,7 @@ hw/kdrive/ephyr/Makefile
 hw/kdrive/epson/Makefile
 hw/kdrive/fake/Makefile
 hw/kdrive/fbdev/Makefile
+hw/kdrive/glamo/Makefile
 hw/kdrive/i810/Makefile
 hw/kdrive/linux/Makefile
 hw/kdrive/mach64/Makefile

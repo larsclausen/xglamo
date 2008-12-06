@@ -23,12 +23,17 @@ if KDRIVELINUX
 LINUX_SUBDIRS = linux
 endif
 
+if KDRIVEGLAMO
+KDRIVE_SUBDIRS = glamo
+endif
+
 SERVER_SUBDIRS = 		\
 	$(XSDL_SUBDIRS)		\
 	$(FBDEV_SUBDIRS)	\
 	$(VESA_SUBDIRS)		\
-	$(XEPHYR_SUBDIRS)       \
-	$(XFAKE_SUBDIRS)
+	$(XEPHYR_SUBDIRS)	   \
+	$(XFAKE_SUBDIRS)	\
+	$(KDRIVE_SUBDIRS)
 
 SUBDIRS =			\
 	src			\
@@ -36,7 +41,7 @@ SUBDIRS =			\
 	$(SERVER_SUBDIRS)
 
 DIST_SUBDIRS = vesa ati chips epson i810 mach64 mga neomagic nvidia pm2 r128 \
-               smi via fbdev sdl ephyr src linux fake sis300
+               smi via fbdev sdl ephyr src linux fake sis300 glamo
 
 relink:
 	@for i in $(SERVER_SUBDIRS) ; do make -C $$i relink ; done
