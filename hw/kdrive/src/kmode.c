@@ -78,6 +78,11 @@ const KdMonitorTiming  kdMonitorTimings[] = {
 		   16,	    48,	    160,    KdSyncNegative, /* 31.469 */
 		   10,	    33,	    45,	    KdSyncNegative, /* 59.940 */
     },
+
+    {   480,    640,    60,     0,                      /* VESA */
+            0,      0,     0,    KdSyncNegative, /* 31.469 */
+            0,      0,     0,     KdSyncNegative, /* 59.940 */
+    },
     
     /* 800x600 modes */
     {	800,	600,	85,	56250,			    /* VESA */
