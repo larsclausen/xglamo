@@ -128,23 +128,10 @@ typedef struct _GLAMOCardInfo {
 
 	char *reg_base;
 	Bool is_3362;
-	CARD32 crtc_pitch;
-	CARD32 crtc2_pitch;
 } GLAMOCardInfo;
 
 #define getGLAMOCardInfo(kd)	((GLAMOCardInfo *) ((kd)->card->driver))
 #define GLAMOCardInfo(kd)		GLAMOCardInfo *glamoc = getGLAMOCardInfo(kd)
-
-
-typedef struct _GLAMOCursor {
-	int		width, height;
-	int		xhot, yhot;
-
-	Bool		has_cursor;
-	CursorPtr	pCursor;
-	Pixel		source, mask;
-	KdOffscreenArea *area;
-} GLAMOCursor;
 
 typedef struct _GLAMOVideoFrameDisplayInfo {
 	/*
@@ -228,9 +215,6 @@ typedef struct _GLAMOScreenInfo {
 
 	int		scratch_offset;
 	int		scratch_next;
-	KdOffscreenArea *scratch_area;
-
-	GLAMOCursor	cursor;
 
 	KdVideoAdaptorPtr pAdaptor;
 	int		num_texture_ports;
@@ -252,20 +236,6 @@ typedef struct _GLAMOScreenInfo {
 
 #define getGLAMOScreenInfo(kd)	((GLAMOScreenInfo *) ((kd)->screen->driver))
 #define GLAMOScreenInfo(kd)	GLAMOScreenInfo *glamos = getGLAMOScreenInfo(kd)
-
-typedef union { float f; CARD32 i; } fi_type;
-
-/* Surely there's a better way to go about this */
-static inline CARD32
-GLAMOFloatAsInt(float val)
-{
-	fi_type fi;
-
-	fi.f = val;
-	return fi.i;
-}
-
-#define GET_FLOAT_BITS(x) GLAMOFloatAsInt(x)
 
 static inline void
 MMIOSetBitMask(char *mmio, CARD32 reg, CARD16 mask, CARD16 val)
@@ -309,24 +279,6 @@ GLAMODrawDisable(ScreenPtr pScreen);
 void
 GLAMODrawFini(ScreenPtr pScreen);
 
-/* glamo_cursor.c */
-Bool
-GLAMOCursorInit(ScreenPtr pScreen);
-
-void
-GLAMOCursorEnable(ScreenPtr pScreen);
-
-void
-GLAMOCursorDisable(ScreenPtr pScreen);
-
-void
-GLAMOCursorFini(ScreenPtr pScreen);
-
-void
-GLAMORecolorCursor(ScreenPtr pScreen, int ndef, xColorItem *pdef);
-
-int
-GLAMOLog2(int val);
 
 /* glamo_video.c */
 Bool

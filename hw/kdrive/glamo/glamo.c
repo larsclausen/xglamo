@@ -741,17 +741,6 @@ GLAMOPutColors(ScreenPtr pScreen, int fb, int n, xColorItem *pdefs)
 	glamoc->backend_funcs.putColors(pScreen, fb, n, pdefs);
 }
 
-/* Compute log base 2 of val. */
-int
-GLAMOLog2(int val)
-{
-	int bits;
-
-	for (bits = 0; val != 0; val >>= 1, ++bits)
-		;
-	return bits - 1;
-}
-
 KdCardFuncs GLAMOFuncs = {
 	GLAMOCardInit,		/* cardinit */
 	GLAMOScreenInit,	/* scrinit */
