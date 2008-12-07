@@ -24,7 +24,7 @@ LINUX_SUBDIRS = linux
 endif
 
 if KDRIVEGLAMO
-KDRIVE_SUBDIRS = glamo
+GLAMO_SUBDIRS = glamo
 endif
 
 SERVER_SUBDIRS = 		\
@@ -33,7 +33,7 @@ SERVER_SUBDIRS = 		\
 	$(VESA_SUBDIRS)		\
 	$(XEPHYR_SUBDIRS)	   \
 	$(XFAKE_SUBDIRS)	\
-	$(KDRIVE_SUBDIRS)
+	$(GLAMO_SUBDIRS)
 
 SUBDIRS =			\
 	src			\
