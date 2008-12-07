@@ -491,14 +491,14 @@ GLAMODrawKaaInit(ScreenPtr pScreen)
  */
 #ifndef GetGLAMOExaPriv
 #define GetGLAMOExaPriv(pScreen) \
-(GLAMOScreenInfo*)pScreen->devPrivates[glamoExaScreenPrivateIndex].ptr
+(GLAMOScreenInfo*)dixLookupPrivate(&pScreen->devPrivates, glamoScreenPrivateKey)
 #endif
 void
 exaDDXDriverInit(ScreenPtr pScreen)
 {
 }
 
-static int glamoExaScreenPrivateIndex;
+static DevPrivateKey glamoScreenPrivateKey = &glamoScreenPrivateKey;
 
 Bool
 GLAMODrawExaInit(ScreenPtr pScreen)
@@ -552,8 +552,7 @@ GLAMODrawExaInit(ScreenPtr pScreen)
 				       GLAMOWakeupHandler,
 				       pScreen);
 
-	glamoExaScreenPrivateIndex = AllocateScreenPrivateIndex() ;
-	pScreen->devPrivates[glamoExaScreenPrivateIndex].ptr = glamos;
+    dixSetPrivate(&pScreen->devPrivates, glamoScreenPrivateKey, glamos);
 	success = exaDriverInit(pScreen, &glamos->exa);
 	if (success) {
 		ErrorF("Initialized EXA acceleration\n");

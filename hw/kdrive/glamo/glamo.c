@@ -287,7 +287,7 @@ glamoSetLCDResolution (int width, int height)
 		GLAMO_LOG_ERROR("unknown mode: (%dx%d)\n", width, height);
 		goto out;
 	}
-	KdSetMouseScaling(scalX, scalY);
+/*	KdSetPointerScaling(scalX, scalY);*/
 	is_ok = TRUE;
 out:
 	if (fd > 0)
@@ -307,7 +307,7 @@ glamoSetScannoutGeometry (ScreenPtr pScreen,
 	FbdevPriv *priv = screen->card->driver;
 	struct fb_var_screeninfo	var;
 	int byte_stride=0, k = 0, is_ok = FALSE;
-	KdMouseMatrix m;
+	KdPointerMatrix m;
 	Bool is_portrait = TRUE, orientation_will_change = FALSE;
         int new_xres = 0, new_yres = 0;
 
@@ -425,15 +425,16 @@ glamoSetScannoutGeometry (ScreenPtr pScreen,
 		  priv->var.xres_virtual, priv->var.yres_virtual,
 		  priv->var.rotate);
 	screen->randr = rotation;
+
 	memset(&m, 0, sizeof(m));
-	KdComputeMouseMatrix(&m, screen->randr, screen->width, screen->height);
-	KdSetMouseMatrix(&m);
+	KdComputePointerMatrix(&m, screen->randr, screen->width, screen->height);
+	KdSetPointerMatrix(&m);
 
 	pScreen->width = screen->width = priv->var.xres;
 	pScreen->height = screen->height = priv->var.yres;
 	screen->fb[0].byteStride =
 			screen->width * screen->fb[0].bitsPerPixel / 8;
-	
+
 	/*TODO: not yet supported by glamo fb module*/
 	pScreen->mmWidth = priv->var.width;
 	pScreen->mmHeight = priv->var.height;
