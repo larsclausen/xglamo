@@ -36,8 +36,8 @@
 
 #ifdef NDEBUG
 /*we are not in debug mode*/
-#define GLAMO_LOG
-#define GLAMO_LOG_ERROR
+#define GLAMO_LOG(...) do {} while(0)
+#define GLAMO_LOG_ERROR(...) do {} while(0)
 
 #else /*NDEBUG*/
 #define ERROR_LOG_LEVEL 3
