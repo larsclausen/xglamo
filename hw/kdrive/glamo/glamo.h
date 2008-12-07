@@ -295,4 +295,10 @@ GLAMOFiniVideo(ScreenPtr pScreen);
 
 extern KdCardFuncs GLAMOFuncs;
 
+/* glamo-randr.c */
+#ifdef RANDR
+Bool
+GLAMORandRInit(ScreenPtr pScreen);
+#endif
+
 #endif /* _GLAMO_H_ */
