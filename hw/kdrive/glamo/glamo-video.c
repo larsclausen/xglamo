@@ -51,8 +51,8 @@
 static void
 GLAMOStopVideo(KdScreenInfo *screen, pointer data, Bool exit)
 {
-	ScreenPtr pScreen = screen->pScreen;
-	GLAMOPortPrivPtr pPortPriv = (GLAMOPortPrivPtr)data;
+	/*ScreenPtr pScreen = screen->pScreen;
+	GLAMOPortPrivPtr pPortPriv = (GLAMOPortPrivPtr)data;*/
 
 
 	GLAMO_LOG("enter\n");
@@ -103,10 +103,10 @@ GLAMOQueryBestSize(KdScreenInfo *screen,
 static void
 GLAMOVideoSave(ScreenPtr pScreen, KdOffscreenArea *area)
 {
-	KdScreenPriv(pScreen);
+	/*KdScreenPriv(pScreen);
 	GLAMOScreenInfo(pScreenPriv);
 	GLAMOPortPrivPtr pPortPriv = glamos->pAdaptor->pPortPrivates[0].ptr;
-	int i;
+	int i;*/
 
 	GLAMO_LOG("mark\n");
 }
@@ -205,7 +205,7 @@ out:
  * @rect_height
  */
 static Bool
-CopyYUVPlanarFrameRect (const char *src_frame,
+CopyYUVPlanarFrameRect (const unsigned char *src_frame,
 			int fourcc_code,
 			unsigned short frame_width,
 			unsigned short frame_height,
@@ -332,7 +332,6 @@ GLAMOVideoUploadFrameToOffscreen (KdScreenInfo *screen,
 				  GLAMOPortPrivPtr portPriv,
 				  unsigned int *out_offscreen_frame)
 {
-	int idx = 0;
 	unsigned size = 0;
 	Bool is_ok = FALSE;
 	ScreenPtr pScreen = screen->pScreen;
@@ -367,7 +366,7 @@ GLAMOVideoUploadFrameToOffscreen (KdScreenInfo *screen,
 		GLAMO_LOG("allocated %d bytes of offscreen memory\n", size);
 
 	}
-	offscreen_frame = screen->memory_base +
+	offscreen_frame = (char*)screen->memory_base +
 				portPriv->off_screen_yuv_buf->offset;
 
 	if (out_offscreen_frame)
@@ -482,12 +481,9 @@ GLAMODisplayFrame (KdScreenInfo *screen,
 		   GLAMOPortPrivPtr portPriv)
 {
 	GLAMOVideoFrameDisplayInfo *info;
-	BoxRec dst_box;
 	unsigned int dest_w, dest_h, dest_frame_addr;
 	unsigned short scale_w, scale_h;
 	PixmapPtr dest_pixmap;
-	ScreenPtr pScreen;
-
 
 	GLAMO_LOG("enter\n");
 
@@ -544,15 +540,10 @@ GLAMOPutImage(KdScreenInfo *screen, DrawablePtr dst_drawable,
 	      RegionPtr clipBoxes,
 	      pointer data)
 {
-	ScreenPtr pScreen = screen->pScreen;
-	KdScreenPriv(pScreen);
-	GLAMOCardInfo(pScreenPriv);
 	GLAMOPortPrivPtr portPriv = (GLAMOPortPrivPtr)data;
 	GLAMOVideoFrameDisplayInfo *info = NULL;
-	unsigned short scale_w, scale_h;
-	unsigned int offscreen_frame_addr = 0, dst_addr = 0;
-	PixmapPtr dst_pixmap;
 	RegionRec dst_reg;
+    unsigned int offscreen_frame_addr = 0;
 
 
 	GLAMO_LOG("enter. id:%#x, frame:(%dx%d) srccrop:(%d,%d)-(%dx%d)\n"
@@ -626,7 +617,6 @@ GLAMOReputImage(KdScreenInfo *screen,
 		RegionPtr clipBoxes,
 		pointer data)
 {
-	ScreenPtr pScreen = screen->pScreen;
 	GLAMOPortPrivPtr	portPriv = (GLAMOPortPrivPtr)data;
 	RegionRec dst_reg;
 

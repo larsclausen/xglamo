@@ -29,7 +29,7 @@
 #include "glamo-regs.h"
 #include "glamo-cmdq.h"
 
-void
+static void
 GLAMOOutReg(ScreenPtr pScreen, unsigned short reg, unsigned short val)
 {
 	KdScreenPriv(pScreen);
@@ -43,7 +43,7 @@ GLAMOOutReg(ScreenPtr pScreen, unsigned short reg, unsigned short val)
 	MMIO_OUT16(glamoc->reg_base, reg, val);
 }
 
-unsigned short
+static unsigned short
 GLAMOInReg(ScreenPtr pScreen, unsigned short reg)
 {
 	KdScreenPriv(pScreen);
@@ -57,7 +57,7 @@ GLAMOInReg(ScreenPtr pScreen, unsigned short reg)
 	return MMIO_IN16(glamoc->reg_base, reg);
 }
 
-void
+static void
 GLAMOSetBitMask(ScreenPtr pScreen, int reg, int mask, int val)
 {
 	int old;
@@ -110,7 +110,7 @@ setCmdMode (ScreenPtr pScreen, Bool on)
 #define STATUS_ENABLED  0x1
 static int engine_status[NB_GLAMO_ENGINES];
 
-void
+static void
 GLAMOResetEngine(ScreenPtr pScreen, enum GLAMOEngine engine)
 {
 	int reg, mask;
@@ -128,7 +128,7 @@ GLAMOResetEngine(ScreenPtr pScreen, enum GLAMOEngine engine)
 		case GLAMO_ENGINE_ISP:
 			reg = GLAMO_REG_CLOCK_ISP;
 			mask = GLAMO_CLOCK_ISP2_RESET;
-			break; 
+			break;
 		case GLAMO_ENGINE_CMDQ:
 			reg = GLAMO_REG_CLOCK_2D;
 			mask = GLAMO_CLOCK_2D_CMDQ_RESET;
@@ -137,6 +137,8 @@ GLAMOResetEngine(ScreenPtr pScreen, enum GLAMOEngine engine)
 			reg = GLAMO_REG_CLOCK_2D;
 			mask = GLAMO_CLOCK_2D_RESET;
 			break;
+        default:
+            return;
 	}
 
 	GLAMOSetBitMask(pScreen, reg, mask, 0xffff);
@@ -147,7 +149,7 @@ GLAMOResetEngine(ScreenPtr pScreen, enum GLAMOEngine engine)
 	GLAMO_LOG("leave\n");
 }
 
-void
+static void
 GLAMOEnableEngine(ScreenPtr pScreen, enum GLAMOEngine engine)
 {
 	GLAMO_LOG("enter\n");
@@ -236,6 +238,8 @@ GLAMOEnableEngine(ScreenPtr pScreen, enum GLAMOEngine engine)
 					GLAMO_CLOCK_GEN51_EN_DIV_GCLK,
 					0xffff);
 			break;
+        default:
+            break;
 	}
 	usleep(1000);
 	engine_status[engine] |= STATUS_ENABLED;
@@ -403,6 +407,7 @@ GLAMOISPYuvRgbPipelineInit(ScreenPtr pScreen)
 	GLAMO_LOG("leave\n");
 }
 
+#if 0
 static void
 GLAMOISPColorKeyOverlayInit(ScreenPtr pScreen)
 {
@@ -417,6 +422,7 @@ GLAMOISPColorKeyOverlayInit(ScreenPtr pScreen)
 			GLAMO_ISP_EN4_OVERLAY|GLAMO_ISP_EN4_LCD_OVERLAY,
 			0x0003);
 }
+#endif
 
 void
 GLAMOISPSetColorKeyOverlay(ScreenPtr	pScreen,
@@ -441,7 +447,7 @@ GLAMOISPSetColorKeyOverlay(ScreenPtr	pScreen,
 		  start_addr, x, y, width, height, pitch,
 		  red_key, green_key, blue_key);
 
-	green_red_keys = (green_key << 8+2) & 0xff00;
+	green_red_keys = ((green_key << 8)+2) & 0xff00;
 	green_red_keys |= (red_key << 3) & 0x00ff;
 
 	BEGIN_CMDQ(18);
@@ -522,7 +528,6 @@ GLAMOISPDisplayYUVPlanarFrame (ScreenPtr pScreen,
 {
 	KdScreenPriv(pScreen);
 	GLAMOScreenInfo(pScreenPriv);
-	int en3;
 	RING_LOCALS;
 
 

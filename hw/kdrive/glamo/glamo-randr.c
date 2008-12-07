@@ -26,6 +26,8 @@
  *   Dodji Seketeli <dodji@openedhand.com>
  */
 
+#include <sys/ioctl.h>
+
 #include "glamo.h"
 #include "glamo-log.h"
 
@@ -166,10 +168,9 @@ glamoSetScannoutGeometry (ScreenPtr pScreen,
 {
 	KdScreenPriv(pScreen);
         KdScreenInfo *screen = pScreenPriv->screen;
-	GLAMOCardInfo(screen);
 	FbdevPriv *priv = screen->card->driver;
-	struct fb_var_screeninfo	var;
-	int byte_stride=0, k = 0, is_ok = FALSE;
+	struct fb_var_screeninfo var;
+	int k = 0, is_ok = FALSE;
 	KdPointerMatrix m;
 	Bool is_portrait = TRUE, orientation_will_change = FALSE;
         int new_xres = 0, new_yres = 0;
@@ -214,10 +215,9 @@ glamoSetScannoutGeometry (ScreenPtr pScreen,
 	GLAMO_LOG("geometry requested by client app: (%dx%d),r:%d\n",
 		  var.xres, var.yres, var.rotate);
 
-	if ((is_portrait && (var.rotate == FB_ROTATE_CW
-			    || var.rotate == FB_ROTATE_CCW))
-	    ||(!is_portrait) && (var.rotate == FB_ROTATE_UR
-			       || var.rotate == FB_ROTATE_UD)) {
+	if ((is_portrait && (var.rotate == FB_ROTATE_CW || var.rotate == FB_ROTATE_CCW))
+	    || ((!is_portrait) && (var.rotate == FB_ROTATE_UR ||
+             var.rotate == FB_ROTATE_UD))) {
 		orientation_will_change = TRUE;
 	}
 	GLAMO_LOG("will orientation change ?:%d\n",
@@ -315,7 +315,6 @@ GLAMORandRSetConfig (ScreenPtr		pScreen,
 {
 	KdScreenPriv(pScreen);
 	KdScreenInfo *screen = pScreenPriv->screen;
-	GLAMOCardInfo *glamoc = screen->card->driver;
 	Bool enabled = TRUE;
 	int byte_stride = 0;
 

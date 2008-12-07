@@ -295,6 +295,26 @@ GLAMOFiniVideo(ScreenPtr pScreen);
 
 extern KdCardFuncs GLAMOFuncs;
 
+/* glamo-funcs.c */
+void
+GLAMOISPDisplayYUVPlanarFrame (ScreenPtr pScreen,
+                   unsigned int y_addr,
+                   unsigned int u_addr,
+                   unsigned int v_addr,
+                   short y_pitch,
+                   short uv_pitch,
+                   short src_crop_rect_width,
+                   short src_crop_rect_height,
+                   unsigned int dst_addr,
+                   short dst_pitch,
+                   short dst_rect_width,
+                   short dst_rect_height,
+                   short scale_w,
+                   short scale_h);
+
+void
+GLAMOISPEngineInit (ScreenPtr pScreen);
+
 /* glamo-randr.c */
 #ifdef RANDR
 Bool

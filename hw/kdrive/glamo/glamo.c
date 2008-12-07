@@ -93,7 +93,6 @@ static void
 GLAMOSetOffscreen (KdScreenInfo *screen)
 {
 	GLAMOCardInfo(screen);
-	FbdevPriv *priv = screen->card->driver;
 	int screen_size;
 	char *mmio = glamoc->reg_base;
 
@@ -212,6 +211,7 @@ GLAMODumpRegs(GLAMOScreenInfo *glamos,
 	      CARD16 from,
 	      CARD16 to)
 {
+#ifdef DEBUG
 	GLAMOCardInfo *glamoc = glamos->glamoc;
 	int i=0;
 	for (i=from; i <= to; i += 2) {
@@ -219,6 +219,7 @@ GLAMODumpRegs(GLAMOScreenInfo *glamos,
 			  glamoc->reg_base+i,
 			  *(VOL16*)(glamoc->reg_base+i));
 	}
+#endif
 }
 
 static Bool

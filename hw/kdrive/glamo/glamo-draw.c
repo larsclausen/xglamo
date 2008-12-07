@@ -72,7 +72,7 @@ static const CARD8 GLAMOBltRop[16] = {
 };
 
 static GLAMOScreenInfo *accel_glamos;
-static CARD32 settings, color, src_pitch_offset, dst_pitch_offset;
+static CARD32 settings;
 
 int sample_count;
 float sample_offsets_x[255];
@@ -163,6 +163,10 @@ GLAMOExaDownloadFromScreen(PixmapPtr pSrc,
 void
 GLAMOExaWaitMarker (ScreenPtr pScreen, int marker);
 
+void
+exaDDXDriverInit(ScreenPtr pScreen);
+
+#if 0
 static void
 MarkForWait(ScreenPtr pScreen)
 {
@@ -186,6 +190,7 @@ WaitSync(ScreenPtr pScreen)
 		kaaWaitSync(pScreen);
 	}
 }
+#endif
 
 void
 GLAMODrawSetup(ScreenPtr pScreen)
@@ -197,9 +202,6 @@ GLAMODrawSetup(ScreenPtr pScreen)
 static void
 GLAMOWaitMarker(ScreenPtr pScreen, int marker)
 {
-	KdScreenPriv(pScreen);
-	GLAMOScreenInfo(pScreenPriv);
-
 	GLAMO_LOG("enter\n");
 	GLAMOEngineWait(pScreen, GLAMO_ENGINE_ALL);
 	GLAMO_LOG("leave\n");
@@ -210,7 +212,7 @@ GLAMOPrepareSolid(PixmapPtr pPix, int alu, Pixel pm, Pixel fg)
 {
 	KdScreenPriv(pPix->drawable.pScreen);
 	GLAMOScreenInfo(pScreenPriv);
-	CARD32 offset, pitch;
+	//CARD32 offset, pitch;
 	FbBits mask;
 	RING_LOCALS;
 
@@ -294,8 +296,8 @@ GLAMOPrepareCopy(PixmapPtr pSrc, PixmapPtr pDst,
 {
 	KdScreenPriv(pDst->drawable.pScreen);
 	GLAMOScreenInfo(pScreenPriv);
-	CARD32 src_offset, src_pitch;
-	CARD32 dst_offset, dst_pitch;
+	/*CARD32 src_offset, src_pitch;
+	CARD32 dst_offset, dst_pitch;*/
 	FbBits mask;
 	RING_LOCALS;
 
@@ -435,7 +437,7 @@ GLAMOWakeupHandler(pointer blockData, int result, pointer readmask)
 {
 }
 
-Bool
+static Bool
 GLAMODrawKaaInit(ScreenPtr pScreen)
 {
 	KdScreenPriv(pScreen);
@@ -447,8 +449,8 @@ GLAMODrawKaaInit(ScreenPtr pScreen)
             screen->memory_size - screen->off_screen_base;
 
 	LogMessage(X_INFO,
-		   "vram size:%d, "
-		   "onscreen vram size:%d, "
+		   "vram size:%ld, "
+		   "onscreen vram size:%ld, "
 		   "offscreen vram size:%d\n",
 		   screen->memory_size,
 		   screen->off_screen_base,
@@ -484,15 +486,16 @@ GLAMODrawKaaInit(ScreenPtr pScreen)
 	return TRUE;
 }
 
+#ifndef GetGLAMOExaPriv
+#define GetGLAMOExaPriv(pScreen) \
+(GLAMOScreenInfo*)dixLookupPrivate(&pScreen->devPrivates, glamoScreenPrivateKey)
+#endif
+
 /**
  * exaDDXDriverInit is required by the top-level EXA module, and is used by
  * the xorg DDX to hook in its EnableDisableFB wrapper.  We don't need it, since
  * we won't be enabling/disabling the FB.
  */
-#ifndef GetGLAMOExaPriv
-#define GetGLAMOExaPriv(pScreen) \
-(GLAMOScreenInfo*)dixLookupPrivate(&pScreen->devPrivates, glamoScreenPrivateKey)
-#endif
 void
 exaDDXDriverInit(ScreenPtr pScreen)
 {
@@ -500,14 +503,12 @@ exaDDXDriverInit(ScreenPtr pScreen)
 
 static DevPrivateKey glamoScreenPrivateKey = &glamoScreenPrivateKey;
 
-Bool
+static Bool
 GLAMODrawExaInit(ScreenPtr pScreen)
 {
 	KdScreenPriv(pScreen);
 	GLAMOScreenInfo(pScreenPriv);
 	KdScreenInfo *screen = pScreenPriv->screen;
-	int offscreen_memory_size = 0;
-	char *use_exa = NULL;
 	Bool success = FALSE;
 
 	GLAMO_LOG("enter\n");
@@ -569,8 +570,6 @@ GLAMODrawInit(ScreenPtr pScreen)
 {
 	KdScreenPriv(pScreen);
 	GLAMOScreenInfo(pScreenPriv);
-	KdScreenInfo *screen = pScreenPriv->screen;
-	int offscreen_memory_size = 0;
 	char *use_exa = NULL;
 
 	LogMessage(X_INFO, "Screen: %d/%d depth/bpp\n",
@@ -601,16 +600,11 @@ GLAMOScratchSave(ScreenPtr pScreen, KdOffscreenArea *area)
 void
 GLAMODrawEnable(ScreenPtr pScreen)
 {
-	KdScreenPriv(pScreen);
-	GLAMOScreenInfo(pScreenPriv);
-
 	GLAMO_LOG("enter\n");
 	GLAMOCMDQCacheSetup(pScreen);
 	GLAMODrawSetup(pScreen);
 	GLAMOEngineWait(pScreen, GLAMO_ENGINE_ALL);
 	GLAMO_LOG("leave\n");
-
-
 }
 
 
@@ -718,8 +712,8 @@ GLAMOExaPrepareCopy(PixmapPtr       pSrc,
 {
 	KdScreenPriv(pDst->drawable.pScreen);
 	GLAMOScreenInfo *glamos = GetGLAMOExaPriv(pDst->drawable.pScreen);
-	CARD32 src_offset, src_pitch;
-	CARD32 dst_offset, dst_pitch;
+	/*CARD32 src_offset, src_pitch;
+	CARD32 dst_offset, dst_pitch;*/
 	FbBits mask;
 	RING_LOCALS;
 
@@ -858,7 +852,6 @@ GLAMOExaUploadToScreen(PixmapPtr pDst,
 	int bpp, i;
 	CARD8 *dst_offset;
 	int dst_pitch;
-	KdScreenPriv(pDst->drawable.pScreen);
 	GLAMOScreenInfo *glamos = GetGLAMOExaPriv(pDst->drawable.pScreen);
 
 	GLAMO_LOG("enter\n");
@@ -867,7 +860,7 @@ GLAMOExaUploadToScreen(PixmapPtr pDst,
 	dst_offset = glamos->exa.memoryBase + exaGetPixmapOffset(pDst)
 						+ x*bpp + y*dst_pitch;
 
-	GLAMO_LOG("dst_pitch:%d, src_pitch\n", dst_pitch, src_pitch);
+	GLAMO_LOG("dst_pitch: %d, src_pitch: %d\n", dst_pitch, src_pitch);
 	for (i = 0; i < h; i++) {
 		memcpy(dst_offset, src, w*bpp);
 		dst_offset += dst_pitch;
@@ -885,12 +878,11 @@ GLAMOExaDownloadFromScreen(PixmapPtr pSrc,
 			   int dst_pitch)
 {
 	int bpp, i;
-	CARD8 *dst_offset, *src;
+	char *dst_offset, *src;
 	int src_pitch;
-	KdScreenPriv(pSrc->drawable.pScreen);
 	GLAMOScreenInfo *glamos = GetGLAMOExaPriv(pSrc->drawable.pScreen);
 
-        GLAMO_LOG("enter\n");
+    GLAMO_LOG("enter\n");
 	bpp = pSrc->drawable.bitsPerPixel;
 	bpp /= 8;
 	src_pitch = pSrc->devKind;
@@ -898,7 +890,7 @@ GLAMOExaDownloadFromScreen(PixmapPtr pSrc,
 						x*bpp + y*src_pitch;
 	dst_offset = dst ;
 
-	GLAMO_LOG("dst_pitch:%d, src_pitch\n", dst_pitch, src_pitch);
+	GLAMO_LOG("dst_pitch: %d, src_pitch: %d\n", dst_pitch, src_pitch);
 	for (i = 0; i < h; i++) {
 		memcpy(dst_offset, src, w*bpp);
 		dst_offset += dst_pitch;
@@ -911,9 +903,6 @@ GLAMOExaDownloadFromScreen(PixmapPtr pSrc,
 void
 GLAMOExaWaitMarker (ScreenPtr pScreen, int marker)
 {
-	KdScreenPriv(pScreen);
-	GLAMOScreenInfo *glamos = GetGLAMOExaPriv(pScreen);
-
 	GLAMO_LOG("enter\n");
 	GLAMOEngineWait(pScreen, GLAMO_ENGINE_ALL);
 	GLAMO_LOG("leave\n");
