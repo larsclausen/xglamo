@@ -330,45 +330,42 @@ GLAMODispatchCMDQCache(GLAMOScreenInfo *glamos)
 	GLAMOCardInfo *glamoc = glamos->glamoc;
 	MemBuf *buf = glamos->cmd_queue_cache;
 	char *mmio = glamoc->reg_base;
-	CARD16 *addr;
+	char *addr;
 	int count, ring_count;
-	TIMEOUT_LOCALS;
+    int rest_size;
+    int old_ring_write = glamos->ring_write;
 
-	addr = (CARD16 *)((char *)buf->address + glamos->cmd_queue_cache_start);
-	count = (buf->used - glamos->cmd_queue_cache_start) / 2;
-	ring_count = glamos->ring_len / 2;
-	if (count + glamos->ring_write >= ring_count) {
-		GLAMOCMDQResetCP(glamos->screen->pScreen);
-		glamos->ring_write = 0;
-	}
+	addr = ((char *)buf->address + glamos->cmd_queue_cache_start);
+	count = (buf->used - glamos->cmd_queue_cache_start);
+	ring_count = glamos->ring_len;
 
-	WHILE_NOT_TIMEOUT(.5) {
-		if (count <= 0)
-			break;
+    /* Wait until the last dispatch has finished */
+    GLAMOEngineWaitReal(glamos->screen->pScreen,
+			    GLAMO_ENGINE_CMDQ, FALSE);
 
-		glamos->ring_addr[glamos->ring_write] = *addr;
-		glamos->ring_write++; addr++;
-		if (glamos->ring_write >= ring_count) {
-			GLAMO_LOG_ERROR("wrapped over ring_write\n");
-			GLAMODumpRegs(glamos, 0x1600, 0x1612);
-			glamos->ring_write = 0;
-		}
-		count--;
-	}
-	if (TIMEDOUT()) {
-		GLAMO_LOG_ERROR("Timeout submitting packets, "
-				"resetting...\n");
-		GLAMODumpRegs(glamos, 0x1600, 0x1612);
-		GLAMOEngineReset(glamos->screen->pScreen, GLAMO_ENGINE_CMDQ);
-		GLAMODrawSetup(glamos->screen->pScreen);
-	}
+    /* Wrap around */
+    if (count + glamos->ring_write >= ring_count) {
+        rest_size = (ring_count - glamos->ring_write);
+        memcpy((char*)(glamos->ring_addr) + glamos->ring_write, addr, rest_size);
+        memcpy((char*)(glamos->ring_addr), addr+rest_size, count - rest_size);
+        glamos->ring_write = (count - rest_size);
+
+        /* The write position has to change to trigger a read */
+        if(old_ring_write == glamos->ring_write) {
+            MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRH,
+                       ((glamos->ring_write-8) >> 16) & 0x7f);
+            MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRL,
+                       (glamos->ring_write-8) & 0xffff);
+        }
+    } else {
+        memcpy((char*)(glamos->ring_addr) + glamos->ring_write, addr, count);
+        glamos->ring_write += count;
+    }
 
 	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRH,
-			 (glamos->ring_write >> 15) & 0x7);
+			   (glamos->ring_write >> 16) & 0x7);
 	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRL,
-			 (glamos->ring_write <<  1) & 0xffff);
-	GLAMOEngineWaitReal(glamos->screen->pScreen,
-			    GLAMO_ENGINE_CMDQ, FALSE);
+			   glamos->ring_write & 0xffff);
 }
 
 void
