@@ -219,7 +219,6 @@ typedef struct _GLAMOScreenInfo {
 	 * "at once", when we are happy with it.
 	 */
 	MemBuf *cmd_queue_cache;
-	size_t cmd_queue_cache_start;
 } GLAMOScreenInfo;
 
 #define getGLAMOScreenInfo(kd)	((GLAMOScreenInfo *) ((kd)->screen->driver))

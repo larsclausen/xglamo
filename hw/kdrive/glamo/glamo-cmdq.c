@@ -335,8 +335,8 @@ GLAMODispatchCMDQCache(GLAMOScreenInfo *glamos)
     size_t rest_size;
     size_t old_ring_write = glamos->ring_write;
 
-	addr = ((char *)buf->address + glamos->cmd_queue_cache_start);
-	count = (buf->used - glamos->cmd_queue_cache_start);
+	addr = ((char *)buf->address);
+	count = buf->used;
 	ring_count = glamos->ring_len;
 
     /* Wait until the last dispatch has finished */
@@ -382,12 +382,12 @@ GLAMOFlushCMDQCache(GLAMOScreenInfo *glamos, Bool discard)
 {
 	MemBuf *buf = glamos->cmd_queue_cache;
 
-	if ((glamos->cmd_queue_cache_start == buf->used) && !discard)
+	if ((buf->used == 0) && !discard)
 		return;
+
 	GLAMODispatchCMDQCache(glamos);
 
 	buf->used = 0;
-	glamos->cmd_queue_cache_start = 0;
 }
 
 #define CQ_LEN 255
@@ -435,7 +435,7 @@ GLAMOCMDQInit(ScreenPtr pScreen,
 	KdScreenPriv(pScreen);
 	GLAMOScreenInfo(pScreenPriv);
 	GLAMOCardInfo(pScreenPriv);
-	size_t cq_len = CQ_LEN;
+	int cq_len = CQ_LEN;
 
 	if (!force && glamos->use_exa && glamos->exa_cmd_queue)
 		return TRUE;
@@ -446,7 +446,7 @@ GLAMOCMDQInit(ScreenPtr pScreen,
 
 	if (glamos->use_exa) {
 		glamos->exa_cmd_queue =
-			exaOffscreenAlloc(pScreen, glamos->ring_len + 4,
+			exaOffscreenAlloc(pScreen, glamos->ring_len,
 					  glamos->exa.pixmapOffsetAlign,
 					  TRUE, NULL, NULL);
 		if (!glamos->exa_cmd_queue)
@@ -456,7 +456,7 @@ GLAMOCMDQInit(ScreenPtr pScreen,
 					glamos->exa_cmd_queue->offset);
 	} else {
 		glamos->cmd_queue =
-			KdOffscreenAlloc(pScreen, glamos->ring_len + 4,
+			KdOffscreenAlloc(pScreen, glamos->ring_len,
 					 glamos->kaa.offsetAlign,
 					 TRUE, NULL, NULL);
 		if (!glamos->cmd_queue)
