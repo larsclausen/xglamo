@@ -201,14 +201,6 @@ typedef struct _GLAMOScreenInfo {
 	KaaScreenInfoRec kaa;
 	ExaDriverRec exa;
 	Bool use_exa;
-	PixmapPtr srcPixmap;
-	PixmapPtr dstPixmap;
-	CARD32 src_offset;
-	CARD32 dst_offset;
-	CARD32 src_pitch;
-	CARD32 dst_pitch;
-	CARD32 settings;
-	CARD32 foreground;
 
 	GLAMOCardInfo *glamoc;
 	KdScreenInfo *screen;

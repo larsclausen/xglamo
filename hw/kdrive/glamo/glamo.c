@@ -94,40 +94,11 @@ GLAMOSetOffscreen (KdScreenInfo *screen)
 {
 	GLAMOCardInfo(screen);
 	int screen_size;
-	char *mmio = glamoc->reg_base;
 
 	GLAMO_LOG("enter\n");
-	screen->fb[0].byteStride =
-		screen->width * screen->fb[0].bitsPerPixel / 8;
-	screen->fb[0].pixelStride =
-		screen->fb[0].byteStride * 8 / screen->fb[0].depth;
 
 	GLAMO_LOG("mmio:%#x, bytestride: %d\n",
 		  mmio, screen->fb[0].byteStride);
-
-	/* check (and adjust) pitch */
-	if (mmio)
-	{
-		GLAMO_LOG("mark\n");
-		int	byteStride = screen->fb[0].byteStride;
-		int	bitStride;
-		int	pixelStride;
-		int	bpp = screen->fb[0].bitsPerPixel;
-
-		/*
-		 * Ensure frame buffer is correctly aligned
-		 */
-		if (byteStride & 0x3f)
-		{
-			GLAMO_LOG("mark\n");
-			byteStride = (byteStride + 0x3f) & ~0x3f;
-			bitStride = byteStride * 8;
-			pixelStride = bitStride / bpp;
-
-			screen->fb[0].byteStride = byteStride;
-			screen->fb[0].pixelStride = pixelStride;
-		}
-	}
 
 	screen_size = screen->fb[0].byteStride * screen->height;
 	screen->off_screen_base = screen_size;
@@ -243,8 +214,8 @@ GLAMOFinishInitScreen(ScreenPtr pScreen)
 	if (!glamoc->backend_funcs.finishInitScreen(pScreen))
 		return FALSE;
 #ifdef RANDR
-	if (!GLAMORandRInit (pScreen))
-		return FALSE;
+/*	if (!GLAMORandRInit (pScreen))
+		return FALSE;*/
 #endif
 	return TRUE;
 }

@@ -31,7 +31,8 @@
 #include "glamo.h"
 #include "glamo-log.h"
 
-#ifdef RANDR
+#if 0
+ifdef RANDR
 static KdMonitorTiming  glamoMonitorTimings[] = {
 	{/*horiz size*/640,  /*vert size*/480, /*frame rate(Hz)*/23,
 	 /*pixel clock(KHz)*/12250,
@@ -364,29 +365,23 @@ GLAMORandRGetInfo(ScreenPtr pScreen, Rotation *rotations)
 	KdScreenInfo *screen = pScreenPriv->screen;
 	unsigned i = 0;
 	RRScreenSizePtr size = NULL;
-	struct {int width, height, rate;} sizes[] = {
-		{480, 640, 50},
-		{640, 480, 25},
-		{240, 320, 50},
-		{320, 240, 50},
-		{0, 0}
-	};
+
+    short sizes[3][] = {{480, 640, 50},
+                        {320, 240, 50},
+                        {0, 0, 0}};
+
+    short *size[3];
 
 	GLAMO_LOG("enter\n");
 
 	*rotations = RR_Rotate_All|RR_Reflect_All;
 
-	for (i=0; i < TAB_LEN(sizes); ++i) {
-		if (sizes[i].width == 0 || sizes[i].height == 0) {
-			continue;
-		}
+	for (size = sizes; size[0] != 0; ++size) {
 		size = RRRegisterSize(pScreen,
-				      sizes[i].width,
-				      sizes[i].height,
-				      (sizes[i].width * screen->width_mm)
-				       /screen->width,
-				      (sizes[i].height *screen->height_mm)
-				       /screen->height);
+				      size[0],
+				      size[1],
+				      screen->width_mm,
+				      screen->height_mm);
 		if (!size) {
 			GLAMO_LOG_ERROR("got null size when "
 					"registering size (%dx%d)\n",
@@ -396,7 +391,7 @@ GLAMORandRGetInfo(ScreenPtr pScreen, Rotation *rotations)
 		if (!RRRegisterRate(pScreen, size, sizes[i].rate)) {
 			GLAMO_LOG_ERROR("failed to register rate %d"
 					" for size (%dx%d)\n",
-					sizes[i].rate,
+					size[2],
 					sizes[i].width,
 					sizes[i].height);
 		}
