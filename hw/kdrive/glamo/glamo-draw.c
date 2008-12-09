@@ -374,29 +374,27 @@ GLAMODoneCopy(void)
 static Bool
 GLAMOUploadToScreen(PixmapPtr pDst, char *src, int src_pitch)
 {
-	int width, height, bpp, i;
-	CARD8 *dst_offset;
-	int dst_pitch;
+    int width, height, widthInBytes;
+    CARD8 *dst_offset;
+    int dst_pitch;
 
     GLAMO_LOG("enter\n");
-	dst_offset = (CARD8 *)pDst->devPrivate.ptr;
-	dst_pitch = pDst->devKind;
-	width = pDst->drawable.width;
-	height = pDst->drawable.height;
-	bpp = pDst->drawable.bitsPerPixel / 8;
+    dst_offset = (CARD8 *)pDst->devPrivate.ptr;
+    dst_pitch = pDst->devKind;
+    width = pDst->drawable.width;
+    height = pDst->drawable.height;
+    widthInBytes = width * pDst->drawable.bitsPerPixel / 8;
 
-	GLAMO_LOG("wxh(%dx%d), bpp:%d, dst_pitch:%d, src_pitch:%d\n",
-		  width, height, bpp, dst_pitch, src_pitch);
+    GLAMO_LOG("wxh(%dx%d), bpp:%d, dst_pitch:%d, src_pitch:%d\n",
+          width, height, pDst->drawable.bitsPerPixel / 8, dst_pitch, src_pitch);
 
-	for (i = 0; i < height; i++)
-	{
-		memcpy(dst_offset, src, width * bpp);
+    while (--height) {
+        memcpy(dst_offset, src, widthInBytes);
+        dst_offset += dst_pitch;
+        src += src_pitch;
+    }
 
-		dst_offset += dst_pitch;
-		src += src_pitch;
-	}
-
-	return TRUE;
+    return TRUE;
 }
 
 static void
@@ -842,25 +840,26 @@ GLAMOExaUploadToScreen(PixmapPtr pDst,
 		       char *src,
 		       int src_pitch)
 {
-	int bpp, i;
-	CARD8 *dst_offset;
-	int dst_pitch;
-	GLAMOScreenInfo *glamos = GetGLAMOExaPriv(pDst->drawable.pScreen);
+    int bpp, widthInBytes;
+    CARD8 *dst;
+    int dst_pitch;
+    GLAMOScreenInfo *glamos = GetGLAMOExaPriv(pDst->drawable.pScreen);
 
-	GLAMO_LOG("enter\n");
-	bpp = pDst->drawable.bitsPerPixel / 8;
-	dst_pitch = pDst->devKind;
-	dst_offset = glamos->exa.memoryBase + exaGetPixmapOffset(pDst)
-						+ x*bpp + y*dst_pitch;
+    GLAMO_LOG("enter\n");
+    bpp = pDst->drawable.bitsPerPixel / 8;
+    widthInBytes = w * bpp;
+    dst_pitch = pDst->devKind;
+    dst = glamos->exa.memoryBase + exaGetPixmapOffset(pDst)
+          + x*bpp + y*dst_pitch;
 
-	GLAMO_LOG("dst_pitch: %d, src_pitch: %d\n", dst_pitch, src_pitch);
-	for (i = 0; i < h; i++) {
-		memcpy(dst_offset, src, w*bpp);
-		dst_offset += dst_pitch;
-		src += src_pitch;
-	}
+    GLAMO_LOG("dst_pitch: %d, src_pitch: %d\n", dst_pitch, src_pitch);
+    while (--h) {
+        memcpy(dst, src, widthInBytes);
+        dst += dst_pitch;
+        src += src_pitch;
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
 Bool
@@ -870,26 +869,26 @@ GLAMOExaDownloadFromScreen(PixmapPtr pSrc,
 			   char *dst,
 			   int dst_pitch)
 {
-	int bpp, i;
-	CARD8 *dst_offset, *src;
-	int src_pitch;
-	GLAMOScreenInfo *glamos = GetGLAMOExaPriv(pSrc->drawable.pScreen);
+    int bpp, widthInBytes;
+    CARD8 *src;
+    int src_pitch;
+    GLAMOScreenInfo *glamos = GetGLAMOExaPriv(pSrc->drawable.pScreen);
 
     GLAMO_LOG("enter\n");
-	bpp = pSrc->drawable.bitsPerPixel / 8;
-	src_pitch = pSrc->devKind;
-	src = glamos->exa.memoryBase + exaGetPixmapOffset(pSrc) +
-						x*bpp + y*src_pitch;
-	dst_offset = (CARD8*)dst;
+    bpp = pSrc->drawable.bitsPerPixel / 8;
+    widthInBytes = w * bpp;
+    src_pitch = pSrc->devKind;
+    src = glamos->exa.memoryBase + exaGetPixmapOffset(pSrc) +
+          x*bpp + y*src_pitch;
 
-	GLAMO_LOG("dst_pitch: %d, src_pitch: %d\n", dst_pitch, src_pitch);
-	for (i = 0; i < h; i++) {
-		memcpy(dst_offset, src, w*bpp);
-		dst_offset += dst_pitch;
-		src += src_pitch;
-	}
+    GLAMO_LOG("dst_pitch: %d, src_pitch: %d\n", dst_pitch, src_pitch);
+    while (--h) {
+        memcpy(dst, src, widthInBytes);
+        dst += dst_pitch;
+        src += src_pitch;
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
 void
