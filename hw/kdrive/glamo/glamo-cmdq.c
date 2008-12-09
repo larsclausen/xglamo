@@ -331,9 +331,9 @@ GLAMODispatchCMDQCache(GLAMOScreenInfo *glamos)
 	MemBuf *buf = glamos->cmd_queue_cache;
 	char *mmio = glamoc->reg_base;
 	char *addr;
-	int count, ring_count;
-    int rest_size;
-    int old_ring_write = glamos->ring_write;
+	size_t count, ring_count;
+    size_t rest_size;
+    size_t old_ring_write = glamos->ring_write;
 
 	addr = ((char *)buf->address + glamos->cmd_queue_cache_start);
 	count = (buf->used - glamos->cmd_queue_cache_start);
@@ -398,7 +398,7 @@ GLAMOCMDQResetCP(ScreenPtr pScreen)
 	GLAMOScreenInfo(pScreenPriv);
 	GLAMOCardInfo(pScreenPriv);
 	char *mmio = glamoc->reg_base;
-	int cq_len = CQ_LEN;
+	size_t cq_len = CQ_LEN;
 	CARD32 queue_offset = 0;
 
 	/* make the decoder happy? */
@@ -435,7 +435,7 @@ GLAMOCMDQInit(ScreenPtr pScreen,
 	KdScreenPriv(pScreen);
 	GLAMOScreenInfo(pScreenPriv);
 	GLAMOCardInfo(pScreenPriv);
-	int cq_len = CQ_LEN;
+	size_t cq_len = CQ_LEN;
 
 	if (!force && glamos->use_exa && glamos->exa_cmd_queue)
 		return TRUE;

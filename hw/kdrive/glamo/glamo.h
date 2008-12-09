@@ -189,8 +189,8 @@ typedef struct _GLAMOPortPriv {
 } GLAMOPortPrivRec, *GLAMOPortPrivPtr;
 
 typedef struct _MemBuf {
-	int size;
-	int used;
+	size_t size;
+	size_t used;
 	void *address;
 } MemBuf;
 
@@ -210,16 +210,16 @@ typedef struct _GLAMOScreenInfo {
 
 	KdOffscreenArea *cmd_queue;	/* mmapped on-device cmd queue. */
 	ExaOffscreenArea *exa_cmd_queue;
-	CARD16		*ring_addr;	/* Beginning of ring buffer. */
-	int		ring_write;	/* Index of write ptr in ring. */
-	int		ring_len;
+	CARD16 *ring_addr;	/* Beginning of ring buffer. */
+	size_t ring_write;	/* Index of write ptr in ring. */
+	size_t ring_len;
 	/*
 	 * cmd queue cache in system memory
 	 * It is to be flushed to cmd_queue_space
 	 * "at once", when we are happy with it.
 	 */
-	MemBuf		*cmd_queue_cache;
-	int		cmd_queue_cache_start;
+	MemBuf *cmd_queue_cache;
+	size_t cmd_queue_cache_start;
 } GLAMOScreenInfo;
 
 #define getGLAMOScreenInfo(kd)	((GLAMOScreenInfo *) ((kd)->screen->driver))
