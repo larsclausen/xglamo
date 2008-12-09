@@ -351,12 +351,12 @@ GLAMODispatchCMDQCache(GLAMOScreenInfo *glamos)
         glamos->ring_write = (count - rest_size);
 
 
-        /* ring_write being 0 will result in a deadlook because the cmdq read
+        /* ring_write being 0 will result in a deadlock because the cmdq read
          * will never stop. To avoid such an behaviour insert an empty
          * instruction. */
         if(glamos->ring_write == 0) {
             memset((char*)(glamos->ring_addr), 0, 8);
-            glamos->ring_addr = 8;
+            glamos->ring_write = 8;
         }
 
         /* The write position has to change to trigger a read */
@@ -435,7 +435,6 @@ GLAMOCMDQInit(ScreenPtr pScreen,
 	KdScreenPriv(pScreen);
 	GLAMOScreenInfo(pScreenPriv);
 	GLAMOCardInfo(pScreenPriv);
-	char *mmio = glamoc->reg_base;
 	int cq_len = CQ_LEN;
 
 	if (!force && glamos->use_exa && glamos->exa_cmd_queue)
