@@ -570,17 +570,6 @@ GLAMODrawInit(ScreenPtr pScreen)
 	}
 }
 
-#if 0
-static void
-GLAMOScratchSave(ScreenPtr pScreen, KdOffscreenArea *area)
-{
-	KdScreenPriv(pScreen);
-	GLAMOScreenInfo(pScreenPriv);
-
-	glamos->scratch_area = NULL;
-}
-#endif
-
 void
 GLAMODrawEnable(ScreenPtr pScreen)
 {
