@@ -350,6 +350,15 @@ GLAMODispatchCMDQCache(GLAMOScreenInfo *glamos)
         memcpy((char*)(glamos->ring_addr), addr+rest_size, count - rest_size);
         glamos->ring_write = (count - rest_size);
 
+
+        /* ring_write being 0 will result in a deadlook because the cmdq read
+         * will never stop. To avoid such an behaviour insert an empty
+         * instruction. */
+        if(glamos->ring_write == 0) {
+            memset((char*)(glamos->ring_addr), 0, 8);
+            glamos->ring_addr = 8;
+        }
+
         /* The write position has to change to trigger a read */
         if(old_ring_write == glamos->ring_write) {
             MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRH,
