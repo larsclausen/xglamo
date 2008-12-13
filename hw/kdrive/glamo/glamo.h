@@ -44,7 +44,7 @@
 
 static __inline__ void
 MMIO_OUT16(__volatile__ void *base, const unsigned long offset,
-	   const unsigned int val)
+	   const unsigned short val)
 {
 	__asm__ __volatile__(
 			"stwbrx %1,%2,%3\n\t"
@@ -53,10 +53,10 @@ MMIO_OUT16(__volatile__ void *base, const unsigned long offset,
 			: "r" (val), "b" (base), "r" (offset));
 }
 
-static __inline__ CARD32
+static __inline__ CARD16
 MMIO_IN16(__volatile__ void *base, const unsigned long offset)
 {
-	register unsigned int val;
+	register unsigned short val;
 	__asm__ __volatile__(
 			"lwbrx %0,%1,%2\n\t"
 			"eieio"
@@ -70,7 +70,7 @@ MMIO_IN16(__volatile__ void *base, const unsigned long offset)
 
 static __inline__ void
 MMIO_OUT16(__volatile__ void *base, const unsigned long offset,
-       const unsigned int val)
+       const unsigned short val)
 {
     __asm__ __volatile__(
             "strh %0, [%1, +%2]"
@@ -82,7 +82,7 @@ MMIO_OUT16(__volatile__ void *base, const unsigned long offset,
 static __inline__ CARD16
 MMIO_IN16(__volatile__ void *base, const unsigned long offset)
 {
-    register unsigned int val;
+    register unsigned short val;
     __asm__ __volatile__(
             "ldrh %0, [%1, +%2]"
             : "=r" (val)
