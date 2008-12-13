@@ -120,6 +120,11 @@ struct backend_funcs {
 #endif
 };
 
+typedef struct _GLAMOCursor {
+    KdOffscreenArea *area;
+    CursorPtr pCursor;
+} GLAMOCursor;
+
 typedef struct _GLAMOCardInfo {
 	union {
 		FbdevPriv fbdev;
@@ -219,6 +224,8 @@ typedef struct _GLAMOScreenInfo {
 	 * "at once", when we are happy with it.
 	 */
 	MemBuf *cmd_queue_cache;
+
+    GLAMOCursor cursor;
 } GLAMOScreenInfo;
 
 #define getGLAMOScreenInfo(kd)	((GLAMOScreenInfo *) ((kd)->screen->driver))
@@ -307,5 +314,12 @@ GLAMOISPEngineInit (ScreenPtr pScreen);
 Bool
 GLAMORandRInit(ScreenPtr pScreen);
 #endif
+
+/* glamo-cursor.c */
+Bool GLAMOCursorInit(ScreenPtr pScreen);
+void GLAMOCursorFini(ScreenPtr pScreen);
+void GLAMOCursorEnable(ScreenPtr pScreen);
+void GLAMOCursorDisable(ScreenPtr pScreen);
+void GLAMOCursorRecolor(ScreenPtr pScreen);
 
 #endif /* _GLAMO_H_ */

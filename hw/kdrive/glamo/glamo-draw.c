@@ -232,8 +232,6 @@ GLAMOPrepareSolid(PixmapPtr pPix, int alu, Pixel pm, Pixel fg)
 	GLAMO_LOG("enter:, src_offset:%#x, src_pitch:%d, fg%#x\n",
 		  glamos->foreground,glamos->src_pitch, glamos->src_offset);
 
-    kaaWaitSync(glamos->screen->pScreen);
-
 	BEGIN_CMDQ(12);
 	OUT_REG(GLAMO_REG_2D_DST_ADDRL, offset & 0xffff);
 	OUT_REG(GLAMO_REG_2D_DST_ADDRH, (offset >> 16) & 0x7f);
@@ -315,8 +313,6 @@ GLAMOPrepareCopy(PixmapPtr pSrc, PixmapPtr pDst,
 
     GLAMO_LOG("src_offset:%#x, dst_offset:%#x\n",
 		  glamos->src_offset, glamos->dst_offset);
-
-	kaaWaitSync(pDst->drawable.pScreen);
 
     BEGIN_CMDQ(16);
     OUT_REG(GLAMO_REG_2D_SRC_ADDRL, src_offset & 0xffff);
@@ -635,8 +631,6 @@ GLAMOExaPrepareSolid(PixmapPtr      pPix,
 
 	GLAMO_LOG("enter.pitch:%d\n", pitch);
 
-    exaWaitSync(glamos->screen->pScreen);
-
 	BEGIN_CMDQ(12);
 	OUT_REG(GLAMO_REG_2D_DST_ADDRL, offset & 0xffff);
 	OUT_REG(GLAMO_REG_2D_DST_ADDRH, (offset >> 16) & 0x7f);
@@ -719,8 +713,6 @@ GLAMOExaPrepareCopy(PixmapPtr       pSrc,
 		  pScreenPriv->screen->memory_base);
 
 	operation = GLAMOBltRop[alu] << 8;
-
-    exaWaitSync(glamos->screen->pScreen);
 
     BEGIN_CMDQ(16);
     OUT_REG(GLAMO_REG_2D_SRC_ADDRL, src_offset & 0xffff);

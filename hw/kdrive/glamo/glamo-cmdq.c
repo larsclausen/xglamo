@@ -343,8 +343,10 @@ GLAMODispatchCMDQCache(GLAMOScreenInfo *glamos)
     GLAMOEngineWaitReal(glamos->screen->pScreen,
 			    GLAMO_ENGINE_CMDQ, FALSE);
 
+    glamos->ring_write += count;
+
     /* Wrap around */
-    if (count + glamos->ring_write >= ring_count) {
+    if (glamos->ring_write >= ring_count) {
         rest_size = (ring_count - glamos->ring_write);
         memcpy((char*)(glamos->ring_addr) + glamos->ring_write, addr, rest_size);
         memcpy((char*)(glamos->ring_addr), addr+rest_size, count - rest_size);

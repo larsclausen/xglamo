@@ -322,11 +322,11 @@ KdCardFuncs GLAMOFuncs = {
 	GLAMOScreenFini,	/* scrfini */
 	GLAMOCardFini,		/* cardfini */
 
-	0,			/* initCursor */
-	0,			/* enableCursor */
-	0,			/* disableCursor */
-	0,			/* finiCursor */
-	0,			/* recolorCursor */
+	GLAMOCursorInit,    /* initCursor */
+	GLAMOCursorEnable,  /* enableCursor */
+	GLAMOCursorDisable, /* disableCursor */
+	GLAMOCursorFini,    /* finiCursor */
+	GLAMOCursorRecolor, /* recolorCursor */
 
 	GLAMODrawInit,		/* initAccel */
 	GLAMODrawEnable,	/* enableAccel */

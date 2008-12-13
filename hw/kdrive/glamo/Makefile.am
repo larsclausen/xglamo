@@ -26,7 +26,8 @@ libglamo_a_SOURCES = 	\
 	glamo-video.c \
 	glamo-funcs.c \
 	glamo-funcs.h \
-    glamo-randr.c
+	glamo-randr.c \
+	glamo-cursor.c
 
 Xglamo_SOURCES = \
 	glamo-stub.c
@@ -43,7 +44,7 @@ Xglamo_LDADD = \
 
 Xglamo_DEPENDENCIES =	\
 	libglamo.a 			\
-        $(FBDEV_LIBS)
+	$(FBDEV_LIBS)
 
 relink:
 	rm -f $(bin_PROGRAMS) && make $(bin_PROGRAMS)
