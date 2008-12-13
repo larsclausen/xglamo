@@ -343,15 +343,13 @@ GLAMODispatchCMDQCache(GLAMOScreenInfo *glamos)
     GLAMOEngineWaitReal(glamos->screen->pScreen,
 			    GLAMO_ENGINE_CMDQ, FALSE);
 
-    glamos->ring_write += count;
 
     /* Wrap around */
-    if (glamos->ring_write >= ring_count) {
+    if (glamos->ring_write + count >= ring_count) {
         rest_size = (ring_count - glamos->ring_write);
         memcpy((char*)(glamos->ring_addr) + glamos->ring_write, addr, rest_size);
         memcpy((char*)(glamos->ring_addr), addr+rest_size, count - rest_size);
         glamos->ring_write = (count - rest_size);
-
 
         /* ring_write being 0 will result in a deadlock because the cmdq read
          * will never stop. To avoid such an behaviour insert an empty
