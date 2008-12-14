@@ -334,41 +334,57 @@ GLAMODispatchCMDQCache(GLAMOScreenInfo *glamos)
 	size_t count, ring_count;
     size_t rest_size;
     size_t old_ring_write = glamos->ring_write;
+    size_t ring_read;
 
-	addr = ((char *)buf->address);
+    if (!buf->used)
+        return;
+
+    addr = ((char *)buf->address);
 	count = buf->used;
 	ring_count = glamos->ring_len;
 
-    /* Wait until the last dispatch has finished */
-    GLAMOEngineWaitReal(glamos->screen->pScreen,
-			    GLAMO_ENGINE_CMDQ, FALSE);
+    glamos->ring_write = (glamos->ring_write + count) & 0x3ffff;
 
+    /* Wait until there is enough space to queue the cmd buffer */
+    if (glamos->ring_write > old_ring_write) {
+        do {
+	        ring_read = MMIO_IN16(mmio, GLAMO_REG_CMDQ_READ_ADDRL);
+        	ring_read |= (MMIO_IN16(mmio, GLAMO_REG_CMDQ_READ_ADDRH) << 16) & 0x7;
+        } while(ring_read > old_ring_write && ring_read < glamos->ring_write);
+    } else {
+        do {
+	        ring_read = MMIO_IN16(mmio, GLAMO_REG_CMDQ_READ_ADDRL);
+        	ring_read |= (MMIO_IN16(mmio, GLAMO_REG_CMDQ_READ_ADDRH) << 16) & 0x7;
+        } while(ring_read > old_ring_write || ring_read < glamos->ring_write);
+    }
 
     /* Wrap around */
-    if (glamos->ring_write + count >= ring_count) {
-        rest_size = (ring_count - glamos->ring_write);
-        memcpy((char*)(glamos->ring_addr) + glamos->ring_write, addr, rest_size);
+    if (old_ring_write >= glamos->ring_write) {
+        rest_size = (ring_count - old_ring_write);
+        memcpy((char*)(glamos->ring_addr) + old_ring_write, addr, rest_size);
         memcpy((char*)(glamos->ring_addr), addr+rest_size, count - rest_size);
-        glamos->ring_write = (count - rest_size);
 
         /* ring_write being 0 will result in a deadlock because the cmdq read
          * will never stop. To avoid such an behaviour insert an empty
          * instruction. */
         if(glamos->ring_write == 0) {
-            memset((char*)(glamos->ring_addr), 0, 8);
-            glamos->ring_write = 8;
+            memset((char*)(glamos->ring_addr), 0, 4);
+            glamos->ring_write = 4;
         }
+
+        /* Before changing write read has to stop */
+        GLAMOEngineWaitReal(glamos->screen->pScreen, GLAMO_ENGINE_CMDQ, FALSE);
 
         /* The write position has to change to trigger a read */
         if(old_ring_write == glamos->ring_write) {
             MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRH,
-                       ((glamos->ring_write-8) >> 16) & 0x7f);
+                       ((glamos->ring_write-4) >> 16) & 0x7f);
             MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRL,
-                       (glamos->ring_write-8) & 0xffff);
+                       (glamos->ring_write-4) & 0xffff);
         }
     } else {
-        memcpy((char*)(glamos->ring_addr) + glamos->ring_write, addr, count);
-        glamos->ring_write += count;
+        memcpy((char*)(glamos->ring_addr) + old_ring_write, addr, count);
+        GLAMOEngineWaitReal(glamos->screen->pScreen, GLAMO_ENGINE_CMDQ, FALSE);
     }
 
 	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRH,
